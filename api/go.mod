@@ -1,4 +1,4 @@
-module gitlab.com/onxorg/goutils/api
+module github.com/lemoras/goutils/api
 
 go 1.20
 

@@ -1,4 +1,4 @@
-module gitlab.com/onxorg/goutils/db
+module github.com/lemoras/goutils/db
 
 go 1.20
 
