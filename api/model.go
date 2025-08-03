@@ -12,22 +12,24 @@ type Response struct {
 }
 
 type Context struct {
-	UserId     uuid.UUID `json:"userId"`
-	RoleId     int       `json:"roleId"`
-	AppId      int       `json:"appId"`
-	MerchantId uuid.UUID `json:"merchantId"`
-	HasId      bool      `json:"hasId"`
-	ProjectId  int       `json:"projectId"`
-	CustomData string    `json:"customData"`
+	UserId        uuid.UUID `json:"userId"`
+	RoleId        int       `json:"roleId"`
+	AppId         int       `json:"appId"`
+	MerchantId    uuid.UUID `json:"merchantId"`
+	HasId         bool      `json:"hasId"`
+	ProjectId     int       `json:"projectId"`
+	CustomData    string    `json:"customData"`
+	InitCompleted bool      `json:"initCompleted"`
 }
 
 type Token struct {
-	UserId     uuid.UUID
-	RoleId     int
-	AppId      int
-	MerchantId uuid.UUID
-	HasId      bool
-	ProjectId  int
-	CustomData string
+	UserId        uuid.UUID
+	RoleId        int
+	AppId         int
+	MerchantId    uuid.UUID
+	HasId         bool
+	ProjectId     int
+	CustomData    string
+	InitCompleted bool
 	jwt.StandardClaims
 }

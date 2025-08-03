@@ -57,6 +57,7 @@ var JwtAuthentication = func(requestToken string, context *Context) (bool, Respo
 	context.HasId = tk.HasId
 	context.ProjectId = tk.ProjectId
 	context.CustomData = tk.CustomData
+	context.InitCompleted = tk.InitCompleted
 
 	return true, result
 }
