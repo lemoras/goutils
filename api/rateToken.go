@@ -11,7 +11,46 @@ import (
 	"time"
 )
 
-func RateTokenhandler(w http.ResponseWriter, r *http.Request) {
+// func RateTokenCheck(rateToken string) (bool, map[string]interface{}) {
+// 	now := time.Now().Unix()
+
+// 	var rl RateLimitToken
+// 	var valid bool
+
+// 	if rateToken == "" {
+// 		rl = RateLimitToken{
+// 			Remaining: maxRequests,
+// 			ResetAt:   now + windowSeconds,
+// 		}
+// 	} else {
+// 		rl, valid = verifyToken(rateToken)
+// 		if !valid {
+// 			return false, Message(false, "Invalid rate token")
+// 		}
+
+// 		if now > rl.ResetAt {
+// 			rl.Remaining = maxRequests
+// 			rl.ResetAt = now + windowSeconds
+// 		}
+
+// 		if rl.Remaining <= 0 {
+// 			return false, Message(false, fmt.Sprintf("Rate limit exceeded. Retry-After ", strconv.FormatInt(rl.ResetAt-now, 10)))
+// 		}
+
+// 		rl.Remaining--
+// 	}
+
+// 	newToken, _ := generateToken(rl.Remaining, rl.ResetAt)
+// 	w.Header().Set("X-RateToken", newToken)
+// 	w.Header().Set("X-RateLimit-Remaining", strconv.Itoa(rl.Remaining))
+// 	w.Header().Set("Content-Type", "application/json")
+// 	w.WriteHeader(http.StatusOK)
+// 	w.Write([]byte(`{"message": "OK"}`))
+
+// 	return true
+// }
+
+func RateTokenhandler(w http.ResponseWriter, r *http.Request) bool {
 	token := r.Header.Get("X-RateToken")
 	now := time.Now().Unix()
 
@@ -27,7 +66,7 @@ func RateTokenhandler(w http.ResponseWriter, r *http.Request) {
 		rl, valid = verifyToken(token)
 		if !valid {
 			http.Error(w, "Invalid rate token", http.StatusUnauthorized)
-			return
+			return false
 		}
 
 		if now > rl.ResetAt {
@@ -38,7 +77,7 @@ func RateTokenhandler(w http.ResponseWriter, r *http.Request) {
 		if rl.Remaining <= 0 {
 			w.Header().Set("Retry-After", strconv.FormatInt(rl.ResetAt-now, 10))
 			http.Error(w, "Rate limit exceeded", http.StatusTooManyRequests)
-			return
+			return false
 		}
 
 		rl.Remaining--
@@ -50,6 +89,8 @@ func RateTokenhandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{"message": "OK"}`))
+
+	return true
 }
 
 func computeHMAC(data []byte) string {
