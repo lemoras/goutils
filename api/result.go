@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 )
 
@@ -35,6 +36,23 @@ func Respond(data map[string]interface{}) (*Response, error) {
 	return &Response{
 		StatusCode: http.StatusOK,
 		Headers:    map[string]string{},
+		Body:       string(jsonData),
+	}, nil
+}
+
+func RespondErrorWithHeaders(err error, headers map[string]string) (*Response, error) {
+	return &Response{
+		StatusCode: http.StatusOK,
+		Headers:    headers,
+		Body:       fmt.Sprintf("Error message is ", err.Error()),
+	}, err
+}
+
+func RespondWithHeaders(data map[string]interface{}, headers map[string]string) (*Response, error) {
+	jsonData, _ := json.Marshal(data)
+	return &Response{
+		StatusCode: http.StatusOK,
+		Headers:    headers,
 		Body:       string(jsonData),
 	}, nil
 }
