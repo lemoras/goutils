@@ -5,50 +5,54 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 )
 
-// func RateTokenCheck(rateToken string) (bool, map[string]interface{}) {
-// 	now := time.Now().Unix()
+func RateTokenCheck(rateToken string) (bool, map[string]interface{}) {
+	now := time.Now().Unix()
 
-// 	var rl RateLimitToken
-// 	var valid bool
+	var rl RateLimitToken
+	var valid bool
 
-// 	if rateToken == "" {
-// 		rl = RateLimitToken{
-// 			Remaining: maxRequests,
-// 			ResetAt:   now + windowSeconds,
-// 		}
-// 	} else {
-// 		rl, valid = verifyToken(rateToken)
-// 		if !valid {
-// 			return false, Message(false, "Invalid rate token")
-// 		}
+	if rateToken == "" {
+		rl = RateLimitToken{
+			Remaining: maxRequests,
+			ResetAt:   now + windowSeconds,
+		}
+	} else {
+		rl, valid = verifyToken(rateToken)
+		if !valid {
+			return false, Message(false, "Invalid rate token")
+		}
 
-// 		if now > rl.ResetAt {
-// 			rl.Remaining = maxRequests
-// 			rl.ResetAt = now + windowSeconds
-// 		}
+		if now > rl.ResetAt {
+			rl.Remaining = maxRequests
+			rl.ResetAt = now + windowSeconds
+		}
 
-// 		if rl.Remaining <= 0 {
-// 			return false, Message(false, fmt.Sprintf("Rate limit exceeded. Retry-After ", strconv.FormatInt(rl.ResetAt-now, 10)))
-// 		}
+		if rl.Remaining <= 0 {
+			return false, Message(false, fmt.Sprintf("Rate limit exceeded. Retry-After ", strconv.FormatInt(rl.ResetAt-now, 10)))
+		}
 
-// 		rl.Remaining--
-// 	}
+		rl.Remaining--
+	}
 
-// 	newToken, _ := generateToken(rl.Remaining, rl.ResetAt)
-// 	w.Header().Set("X-RateToken", newToken)
-// 	w.Header().Set("X-RateLimit-Remaining", strconv.Itoa(rl.Remaining))
-// 	w.Header().Set("Content-Type", "application/json")
-// 	w.WriteHeader(http.StatusOK)
-// 	w.Write([]byte(`{"message": "OK"}`))
+	newToken, _ := generateToken(rl.Remaining, rl.ResetAt)
 
-// 	return true
-// }
+	// w.Header().Set("X-RateToken", newToken)
+	// w.Header().Set("X-RateLimit-Remaining", strconv.Itoa(rl.Remaining))
+	// w.Header().Set("Content-Type", "application/json")
+	// w.WriteHeader(http.StatusOK)
+	// w.Write([]byte(`{"message": "OK"}`))
+	resp := Message(true, "Generated Rate Token by Successful")
+	resp["rateToken"] = newToken
+
+	return true, resp
+}
 
 func RateTokenhandler(w http.ResponseWriter, r *http.Request) bool {
 	token := r.Header.Get("X-RateToken")
@@ -88,7 +92,7 @@ func RateTokenhandler(w http.ResponseWriter, r *http.Request) bool {
 	w.Header().Set("X-RateLimit-Remaining", strconv.Itoa(rl.Remaining))
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`{"message": "OK"}`))
+	// w.Write([]byte(`{"message": "OK"}`))
 
 	return true
 }
