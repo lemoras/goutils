@@ -43,4 +43,6 @@ type CustomHttp struct {
 type CustomHeader struct {
 	Authorization string `json:"authorization"`
 	Referer       string `json:"referer"`
+	Cookie        string `json:"cookie"`
+	XAPIKey       string `json:"x-api-key"`
 }
