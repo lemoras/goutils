@@ -2,12 +2,13 @@ package api
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"strings"
 	"time"
 )
 
-var SetJWTAutCookie = func(httpToken string, context *Context) map[string]string {
+var SetJWTAutCookie = func(httpToken string, requestOrigin string, secure bool) map[string]string {
 
 	var headers map[string]string
 	if httpToken != "" {
@@ -15,15 +16,30 @@ var SetJWTAutCookie = func(httpToken string, context *Context) map[string]string
 
 		// Cookie stringini hazırla
 		exp := time.Now().Add(20 * time.Minute).UTC().Format(time.RFC1123)
-		cookie := fmt.Sprintf(
-			"authToken=%s; Expires=%s; Path=/; Domain=.lemoras.com HttpOnly; SameSite=Strict",
-			// "authToken=%s; Expires=%s; Path=/; Domain=.lemoras.com HttpOnly; Secure; SameSite=Strict",
-			token, exp,
+
+		var cookieStr string
+
+		cookieStr = fmt.Sprintf(
+			"authToken=%s; Expires=%s; Path=/; Domain=%s; HttpOnly; SameSite=Strict;",
+			token, exp, requestOrigin,
 		)
 
+		if secure {
+			cookieStr = fmt.Sprintf(
+				"authToken=%s; Expires=%s; Path=/; Domain=%s; HttpOnly; Secure;  SameSite=Strict;",
+				token, exp, requestOrigin,
+			)
+		}
+
+		if !isOriginAllowed(requestOrigin) {
+			return headers
+		}
+
 		headers = map[string]string{
-			"Set-Cookie":   cookie,
-			"Content-Type": "application/json",
+			"Set-Cookie":                       cookieStr,
+			"Access-Control-Allow-Origin":      requestOrigin,
+			"Access-Control-Allow-Credentials": "true",
+			"Content-Type":                     "application/json",
 		}
 	}
 
@@ -74,4 +90,32 @@ var CheckAuthEmpty = func(headers CustomHeader) bool {
 	}
 
 	return tokenValue == ""
+}
+
+func isOriginAllowed(origin string) bool {
+
+	allowedDomains := []string{"localhost", "lemoras.com"}
+
+	parsedOrigin, err := url.Parse(origin)
+	if err != nil {
+		return false
+	}
+
+	originHost := parsedOrigin.Host
+
+	if strings.HasPrefix(originHost, "localhost:") {
+		originHost = "localhost"
+	}
+
+	for _, domain := range allowedDomains {
+		if originHost == domain {
+			return true
+		}
+
+		if strings.HasSuffix(originHost, "."+domain) {
+			return true
+		}
+	}
+
+	return false
 }
