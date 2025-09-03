@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-var SetJWTAutCookie = func(httpToken string, requestOrigin string, secure bool) map[string]string {
+var SetJWTAutCookie = func(httpToken string, requestOrigin string, hasDomain bool) map[string]string {
 
 	var headers map[string]string
 	if httpToken != "" {
@@ -20,13 +20,13 @@ var SetJWTAutCookie = func(httpToken string, requestOrigin string, secure bool) 
 		var cookieStr string
 
 		cookieStr = fmt.Sprintf(
-			"authToken=%s; Expires=%s; Path=/; Domain=%s; HttpOnly; SameSite=Strict;",
-			token, exp, requestOrigin,
+			"authToken=Bearer %s; Expires=%s; Path=/; HttpOnly; Secure; SameSite=None;",
+			token, exp,
 		)
 
-		if secure {
+		if hasDomain {
 			cookieStr = fmt.Sprintf(
-				"authToken=%s; Expires=%s; Path=/; Domain=%s; HttpOnly; Secure;  SameSite=Strict;",
+				"authToken=%s; Expires=%s; Path=/; Domain=%s; HttpOnly; Secure; SameSite=None;",
 				token, exp, requestOrigin,
 			)
 		}
@@ -52,21 +52,27 @@ var CheckJWTAutCookie = func(requestToken string, context *Context, headers Cust
 		return JwtAuthentication(requestToken, context)
 	}
 
-	tokenValue := ""
+	if headers.Cookie == "" {
+		return ResMessage(false, "Missing Cookie")
+	}
+
 	cookies := strings.Split(headers.Cookie, "; ")
+
+	var authTokenValue string
+
 	for _, cookie := range cookies {
-		parts := strings.Split(cookie, "=")
+		parts := strings.SplitN(cookie, "=", 2)
 		if len(parts) == 2 && parts[0] == "authToken" {
-			tokenValue = parts[1]
+			authTokenValue = parts[1]
 			break
 		}
 	}
 
-	if tokenValue == "" {
+	if authTokenValue == "" {
 		return ResMessage(false, "0x11130:Missing auth token")
 	}
 
-	return JwtAuthentication(tokenValue, context)
+	return JwtAuthentication(authTokenValue, context)
 }
 
 var CheckAuthEmpty = func(headers CustomHeader) bool {
@@ -94,7 +100,9 @@ var CheckAuthEmpty = func(headers CustomHeader) bool {
 
 func isOriginAllowed(origin string) bool {
 
-	allowedDomains := []string{"localhost", "lemoras.com"}
+	allowedDomainsStr := os.Getenv("cookie_allowed_domains")
+
+	allowedDomains := strings.Split(allowedDomainsStr, ",")
 
 	parsedOrigin, err := url.Parse(origin)
 	if err != nil {
