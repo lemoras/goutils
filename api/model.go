@@ -44,5 +44,6 @@ type CustomHeader struct {
 	Authorization string `json:"authorization"`
 	Referer       string `json:"referer"`
 	Cookie        string `json:"cookie"`
+	Origin        string `json:"origin"`
 	XAPIKey       string `json:"x-api-key"`
 }
