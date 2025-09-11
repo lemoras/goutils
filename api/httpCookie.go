@@ -48,7 +48,7 @@ var SetJWTAutCookie = func(httpToken string, requestOrigin string, hasDomain boo
 
 var CheckJWTAutCookie = func(requestToken string, context *Context, headers CustomHeader) (bool, Response) {
 
-	if headers.XAPIKey == os.Getenv("X_API_KEY") {
+	if headers.XAPIKey == os.Getenv("x_api_key") {
 		return JwtAuthentication(requestToken, context)
 	}
 
@@ -77,7 +77,7 @@ var CheckJWTAutCookie = func(requestToken string, context *Context, headers Cust
 
 var CheckAuthEmpty = func(headers CustomHeader) bool {
 
-	if headers.XAPIKey == os.Getenv("X_API_KEY") {
+	if headers.XAPIKey == os.Getenv("x_api_key") {
 		return headers.Authorization == ""
 	}
 
@@ -111,9 +111,8 @@ func isOriginAllowed(origin string) bool {
 
 	originHost := parsedOrigin.Host
 
-	mainDomain := os.Getenv("MAIN_DOMAIN")
-	if strings.HasPrefix(originHost, mainDomain+":") {
-		originHost = mainDomain
+	if strings.HasPrefix(originHost, "localhost:") {
+		originHost = "localhost"
 	}
 
 	for _, domain := range allowedDomains {
