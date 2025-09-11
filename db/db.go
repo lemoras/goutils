@@ -18,7 +18,7 @@ func init() {
 		fmt.Print(e)
 	}
 
-	databaseUrl := os.Getenv("database_url")
+	databaseUrl := os.Getenv("DATABASE_URL")
 
 	if databaseUrl == "" {
 		panic("database url is empty")
