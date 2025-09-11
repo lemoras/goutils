@@ -148,7 +148,7 @@ func generateToken(remaining int, resetAt int64) (string, error) {
 }
 
 const (
-	secretKey     = "rate_secret_key"
+	secretKey     = "RATE_SECRET_KEY"
 	maxRequests   = 5
 	windowSeconds = 60
 )
